@@ -5,11 +5,7 @@ output:
     keep_md: true
 ---
 
-```{r include = FALSE}
 
-knitr::opts_chunk$set(echo = TRUE)
-
-```
 
 ## Introduction
 
@@ -33,88 +29,144 @@ Now, let's look at the data and answer some of the questions.
 
 To load the data into system memory and preprocess it, first lets download and open the required library. Here we will make the use of `data.table` and `ggplot` library.
 
-```{r}
 
+```r
 packages <- c("data.table", "dplyr","ggplot2")
 installed_packages <- packages %in% rownames(installed.packages())
 if (any(installed_packages == FALSE)) {
         install.packages(packages[!installed_packages])
 }
 invisible(lapply(packages, library, character.only = TRUE))
+```
 
+```
+## 
+## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:data.table':
+## 
+##     between, first, last
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
 ```
 
 The above code will install the library and load to memory in your system. If you have already installed these libraries, then it will only load these libraries in system memory.
 
 Now use `getwd()` function to get the current working directory path to download the data.
 
-```{r}
 
+```r
 path <- getwd()
 
 data_url <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 download.file(data_url, "activity.zip")
 unzip("activity.zip", exdir = "data")
-
 ```
 
 The above code download the data from `data_url`, and then extracts the data from downloaded `zip` file to `data` directory in current working directory.
 
 Now read the csv data from the data directory
 
-```{r}
 
+```r
 activity_data <- data.table::fread("data/activity.csv")
 head(activity_data, 5)
-
 ```
 
-```{r}
+```
+##    steps       date interval
+## 1:    NA 2012-10-01        0
+## 2:    NA 2012-10-01        5
+## 3:    NA 2012-10-01       10
+## 4:    NA 2012-10-01       15
+## 5:    NA 2012-10-01       20
+```
 
+
+```r
 str(activity_data)
+```
 
+```
+## Classes 'data.table' and 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : IDate, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+##  - attr(*, ".internal.selfref")=<externalptr>
 ```
 
 ## What is mean total number of steps taken per day?
 
 #### 1. Let's calculate the mean total number of steps taken per day. We will ignore the missing data here.
 
-```{r}
 
+```r
 totalStep <- activity_data %>%
         group_by(date) %>%
         summarise(steps = sum(steps, na.rm = TRUE))
 head(totalStep, 5)
+```
 
+```
+## # A tibble: 5 × 2
+##   date       steps
+##   <IDate>    <int>
+## 1 2012-10-01     0
+## 2 2012-10-02   126
+## 3 2012-10-03 11352
+## 4 2012-10-04 12116
+## 5 2012-10-05 13294
 ```
 
 #### 2. Plot the histogram for number of steps per day.
 
 Here we will use the base plot functions to plot the histogram for number of steps per day.
 
-```{r}
 
+```r
 hist(totalStep$steps,
      col = "grey",
      border = "black",
      xlab = "Number of Steps",
      ylab = "Frequency",
      main = "Total Number of Steps Taken Each Day")
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 
 #### 3. What is the mean and median of number of steps taken per day?
 
 We will use `mean` and `median` function to calculate the mean and median of above data.
 
-```{r}
 
+```r
 mean_steps <- mean(totalStep$steps)
 cat("Mean steps per day:", mean_steps, "\n")
+```
 
+```
+## Mean steps per day: 9354.23
+```
+
+```r
 median_steps <- median(totalStep$steps)
 cat("Median steps per day:", median_steps, "\n")
+```
 
+```
+## Median steps per day: 10395
 ```
 
 ## What is the average daily activity pattern?
@@ -125,36 +177,60 @@ To understand the average daily activity pattern let's do the following:
 
 For this we will use the `ggplot2` library. First lets calculate the average number of steps for each 5-minute interval across all days.
 
-```{r}
 
+```r
 avg_5mIntStep <- activity_data %>%
         group_by(interval) %>%
         summarise(steps = mean(steps, na.rm = TRUE))
 head(avg_5mIntStep, 5)
+```
 
+```
+## # A tibble: 5 × 2
+##   interval  steps
+##      <int>  <dbl>
+## 1        0 1.72  
+## 2        5 0.340 
+## 3       10 0.132 
+## 4       15 0.151 
+## 5       20 0.0755
 ```
 
 Now lets plot the above data.
 
-```{r}
 
+```r
 ggplot(data = avg_5mIntStep, aes(x = interval, y = steps)) +
         geom_line(color = "red", lwd = 1) +
         labs(x = "5-Minute Interval", y = " Average Number of Steps",
              main = "Time series of the average number of steps taken at 5-minute interval") +
         theme_bw()
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
 
 
 #### 2. Now let's calculate which 5-minute interval has maximum average number of steps.
 
-```{r}
 
+```r
 Interval <- avg_5mIntStep[which.max(avg_5mIntStep$steps), ]
 Interval
-cat("In interval", Interval$interval, "it contains the maximum average number of steps across all days and the average maximum number of steps is", Interval$steps)
+```
 
+```
+## # A tibble: 1 × 2
+##   interval steps
+##      <int> <dbl>
+## 1      835  206.
+```
+
+```r
+cat("In interval", Interval$interval, "it contains the maximum average number of steps across all days and the average maximum number of steps is", Interval$steps)
+```
+
+```
+## In interval 835 it contains the maximum average number of steps across all days and the average maximum number of steps is 206.1698
 ```
 
 
@@ -163,13 +239,22 @@ In the original data there are missing values coded as <font color="red">NA</fon
 
 #### 1. First let's calculate the total number of missing values in the dataset.
 
-```{r}
 
+```r
 number_NA <- nrow(activity_data[is.na(steps), ])
 number_NA
+```
 
+```
+## [1] 2304
+```
+
+```r
 cat("So we have total", number_NA , "number of rows with NA values.")
+```
 
+```
+## So we have total 2304 number of rows with NA values.
 ```
 
 #### 2. Now let's formulate the strategy how we fill the missing values in the dataset.
@@ -182,14 +267,22 @@ Here we will use the integer average value of each 5-minute interval to fill the
 We now fill the missing values by above mentioned method and create new dataset that is equal to the original dataset but with the missing data filled in. For this, we have already calculated the average values for each interval in `avg_5mIntStep`. So we will use those average values to fill the missing values.
 
 
-```{r}
 
+```r
 new_filled_data <- activity_data %>%
         mutate(steps = ifelse(is.na(steps),
                               avg_5mIntStep$steps[match(interval, avg_5mIntStep$interval)],
                               steps))
 head(new_filled_data, 5)
+```
 
+```
+##        steps       date interval
+## 1: 1.7169811 2012-10-01        0
+## 2: 0.3396226 2012-10-01        5
+## 3: 0.1320755 2012-10-01       10
+## 4: 0.1509434 2012-10-01       15
+## 5: 0.0754717 2012-10-01       20
 ```
 
 In above code, `as.integer` keeps the integer values for the average number of steps if in decimal for filling missing values cases.
@@ -199,38 +292,58 @@ In above code, `as.integer` keeps the integer values for the average number of s
 
 First lets create the histogram for the newly created data for total number of steps taken each day. For this we will calculate the average as in first part.
 
-```{r}
 
+```r
 totalStep_newdata <- new_filled_data %>%
         group_by(date) %>%
         summarise(steps = sum(steps, na.rm = TRUE))
 head(totalStep_newdata, 5)
+```
 
+```
+## # A tibble: 5 × 2
+##   date        steps
+##   <IDate>     <dbl>
+## 1 2012-10-01 10766.
+## 2 2012-10-02   126 
+## 3 2012-10-03 11352 
+## 4 2012-10-04 12116 
+## 5 2012-10-05 13294
 ```
 
 Now we will make the histogram plot of the data.
 
-```{r}
 
+```r
 hist(totalStep_newdata$steps,
      col = "grey",
      border = "black",
      xlab = "Number of Steps",
      ylab = "Frequency",
      main = "Total Number of Steps Taken Each Day")
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
 
 Now let's calculate the mean and median for the total number of steps taken each day from above data.
 
-```{r}
 
+```r
 new_mean_steps <- mean(totalStep_newdata$steps)
 cat("Mean steps per day after filling missing values:", new_mean_steps, "\n")
+```
 
+```
+## Mean steps per day after filling missing values: 10766.19
+```
+
+```r
 new_median_steps <- median(totalStep_newdata$steps)
 cat("Median steps per day after filling missing values:", new_median_steps, "\n")
+```
 
+```
+## Median steps per day after filling missing values: 10766.19
 ```
 
 The mean and median for this dataset are equal, but differ from the original dataset. The mean  of this new dataset is higher compared to original dataset  that may have resulted from imputing the average data at each 5-minute interval wherever missing and the weightage of the imputed data.
@@ -243,8 +356,8 @@ To understand the weekdays pattern, we will use the `weekdays()` function to ext
 
 For this first lets create a function `week_day` that reads the date and changes it to weekday or weekend.
 
-```{r}
 
+```r
 week_day <- function(date){
         
         day <- weekdays(as.Date(date, '%Y-%m-%d'))
@@ -258,7 +371,15 @@ week_day <- function(date){
 
 new_filled_data$days <- as.factor(sapply(new_filled_data$date, week_day))
 head(new_filled_data, 5)
+```
 
+```
+##        steps       date interval    days
+## 1: 1.7169811 2012-10-01        0 Weekday
+## 2: 0.3396226 2012-10-01        5 Weekday
+## 3: 0.1320755 2012-10-01       10 Weekday
+## 4: 0.1509434 2012-10-01       15 Weekday
+## 5: 0.0754717 2012-10-01       20 Weekday
 ```
 
 
@@ -267,26 +388,46 @@ head(new_filled_data, 5)
 Here we create a panel plot containing time series of average number of steps taken across all weekday or weekend days for 5 minute interval. For this first average the data based on weekday and weekend.
 
 
-```{r}
 
+```r
 avg_5mIntnewData <- new_filled_data %>%
         group_by(interval, days) %>%
         summarise(steps = mean(steps))
-head(avg_5mIntnewData, 5)
+```
 
+```
+## `summarise()` has grouped output by 'interval'. You can override using the
+## `.groups` argument.
+```
+
+```r
+head(avg_5mIntnewData, 5)
+```
+
+```
+## # A tibble: 5 × 3
+## # Groups:   interval [3]
+##   interval days     steps
+##      <int> <fct>    <dbl>
+## 1        0 Weekday 2.25  
+## 2        0 Weekend 0.215 
+## 3        5 Weekday 0.445 
+## 4        5 Weekend 0.0425
+## 5       10 Weekday 0.173
 ```
 
 
 Now We will use the `ggplot` library, to plot the weekday and weekend data.
 
 
-```{r}
 
+```r
 ggplot(data = avg_5mIntnewData, aes(x = interval, y = steps)) +
         geom_line(color = "blue", lwd = 1) +
         facet_wrap(~days, nrow = 2) +
         labs(x = "5-Minute Interval", y = " Number of Steps") +
         theme_bw()
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
 
